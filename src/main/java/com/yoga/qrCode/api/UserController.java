@@ -1,6 +1,6 @@
 package com.yoga.qrCode.api;
 
-import com.yoga.qrCode.model.Response.Response;
+import com.yoga.qrCode.model.response.Response;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

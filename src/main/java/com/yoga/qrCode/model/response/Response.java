@@ -1,4 +1,4 @@
-package com.yoga.qrCode.model.Response;
+package com.yoga.qrCode.model.response;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
