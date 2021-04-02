@@ -23,4 +23,6 @@ public class Customer {
     private String userId;
     @Column(name = "emailId")
     private String emailId;
+    @Column(name = "setupCompleted")
+    private boolean setupCompleted;
 }
