@@ -1,10 +1,12 @@
 package com.yoga.qrCode.api;
 
+import com.yoga.qrCode.model.request.Request;
 import com.yoga.qrCode.model.response.Response;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
 import com.yoga.qrCode.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,17 +22,18 @@ public class UserController {
     private UserService userService;
 
     @PostMapping(value = "/create")
-    public ResponseEntity<Response> createUser(@RequestBody UserRequest userRequest) {
+    public ResponseEntity<Response> createUser(@RequestBody UserRequest userRequest, @RequestHeader("requestId") String requestId) {
+        userRequest.setRequestId(requestId);
         boolean status = userService.createNewUser(userRequest);
         return new ResponseEntity<>(new Response().setStatus(status), getHttpStatusCode(status));
     }
 
     @GetMapping(value = "/get")
-    public ResponseEntity<UserResponse> getUser(@RequestHeader("userId") String userId) {
-        Optional<UserResponse> userResponseOp = userService.getUser(userId);
+    public ResponseEntity<?> getUser(@RequestHeader("userId") String userId, @RequestHeader("requestId") String requestId) {
+        Optional<UserResponse> userResponseOp = userService.getUser(userId, requestId);
         return userResponseOp.isPresent() ?
-             new ResponseEntity<>((UserResponse) userResponseOp.get().setStatus(true), getHttpStatusCode(true)) :
-             new ResponseEntity<>((UserResponse) new UserResponse().setStatus(false), getHttpStatusCode(false));
+             new ResponseEntity<>(userResponseOp.get().setStatus(true), getHttpStatusCode(true)) :
+             new ResponseEntity<>(new Response().setStatus(false), getHttpStatusCode(false));
     }
 
 

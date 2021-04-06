@@ -34,28 +34,28 @@ public class UserServiceImpl implements UserService {
     public boolean createNewUser(UserRequest userRequest) {
         Customer customer = customerRepository.save(userToCustomerModel(userRequest).get());
         if(customer.getId() > 0) {
-            log.info("User Created with id {}", customer.getId());
+            log.info("RequestId : {}, User Created with id {}", userRequest.getRequestId(), customer.getId());
             UserGroup userGroup = userGroupRepository.save(userGroupModel(customer,
                     getBatchByBatchId().apply(userRequest.getBatchId()).get()).get());
             if (userGroup.getId() > 0) {
-                log.info("User Group created with id {}", userGroup.getId());
+                log.info("RequestId: {}, User Group created with id {}", userRequest.getRequestId() ,userGroup.getId());
                 return true;
             } else {
-                log.info("User Group Creation problem");
+                log.info("RequestId:{}, User Group Creation problem", userRequest.getRequestId());
                 return false;
             }
         }
-        log.info("User Creation Problem");
+        log.info("RequestId:{}, User Creation Problem", userRequest.getRequestId());
         return false;
     }
 
     @Override
-    public Optional<UserResponse> getUser(String emailorUserId) {
+    public Optional<UserResponse> getUser(String emailorUserId, String requestId) {
         String operation = emailorUserId.contains("@") ? "emailId" : "userId";
         Optional<Customer> customerOp = operation.equals("emailId") ?
                 getCustomerByEmailId().apply(emailorUserId) : getCustomerByUserId().apply(emailorUserId);
         if(customerOp.isPresent()) {
-            log.info("Customer details available.. {}", customerOp.get().toString());
+            log.info("RequestId : {}, Customer details available.. {}", requestId, customerOp.get().toString());
             Optional<UserGroup> userGroupOp = getUserGroupByCustomerId().apply(customerOp.get().getId());
             Optional<Batch> batchOp = batchRepository.findById(userGroupOp.get().getBatch().getId());
             return Optional.of(userResponse(customerOp.get(),batchOp.get().getBatchId()).get());

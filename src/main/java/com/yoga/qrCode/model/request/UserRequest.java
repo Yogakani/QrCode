@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserRequest {
+public class UserRequest extends Request {
     private String customerId;
     private String batchId;
     private String emailId;

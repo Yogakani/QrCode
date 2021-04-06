@@ -46,8 +46,8 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
+		<finalName>qrCode</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
