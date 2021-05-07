@@ -6,6 +6,7 @@ import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
 import com.yoga.qrCode.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,18 @@ public class UserController {
         return userResponseOp.isPresent() ?
              new ResponseEntity<>(userResponseOp.get().setStatus(true), getHttpStatusCode(true)) :
              new ResponseEntity<>(new Response().setStatus(false), getHttpStatusCode(false));
+    }
+
+    @PutMapping(value = "/update/password")
+    public ResponseEntity<Response> updatePassword(@RequestBody UserRequest userRequest, @RequestHeader("requestId") String requestId) {
+        log.info("RequestId : {} - User Password update process starts..",requestId);
+        userRequest.setRequestId(requestId);
+        boolean status = Optional.ofNullable(userRequest)
+                                .filter(r -> StringUtils.isNotEmpty(r.getCustomerId()) && StringUtils.isNotEmpty(r.getBatchId()))
+                                .map(r -> userService.updatePassword(r))
+                                .orElse(Boolean.FALSE);
+        log.info("RequestId : {} - User Password update process ends..",requestId);
+        return new ResponseEntity<>(new Response().setStatus(status), getHttpStatusCode(status));
     }
 
 

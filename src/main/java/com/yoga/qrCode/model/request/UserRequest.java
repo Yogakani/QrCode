@@ -20,4 +20,5 @@ public class UserRequest extends Request {
     private String customerId;
     private String batchId;
     private String emailId;
+    private String password;
 }

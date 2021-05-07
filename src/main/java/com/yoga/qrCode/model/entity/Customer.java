@@ -25,4 +25,8 @@ public class Customer {
     private String emailId;
     @Column(name = "setupCompleted")
     private boolean setupCompleted;
+    @Column(name = "password")
+    private String password;
+    @Column(name = "qrCode")
+    private String qrCode;
 }
