@@ -1,6 +1,5 @@
 package com.yoga.qrCode.api;
 
-import com.yoga.qrCode.model.request.Request;
 import com.yoga.qrCode.model.response.Response;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
@@ -8,7 +7,6 @@ import com.yoga.qrCode.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
