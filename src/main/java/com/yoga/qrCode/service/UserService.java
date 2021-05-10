@@ -1,5 +1,6 @@
 package com.yoga.qrCode.service;
 
+import com.yoga.qrCode.model.request.AuthByQrCodeRequest;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
 
@@ -11,4 +12,7 @@ public interface UserService {
     boolean authenticate(UserRequest userRequest, String requestId);
     boolean updatePassword(UserRequest userRequest);
     boolean validatePassword(UserRequest userRequest);
+    Optional<String> generateToken(UserRequest userRequest);
+    Optional<String> generateQrCode(UserRequest userRequest);
+    boolean validateQrCode(AuthByQrCodeRequest authByQrCodeRequest);
 }

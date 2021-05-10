@@ -4,6 +4,7 @@ import com.yoga.qrCode.agent.AgentService;
 import com.yoga.qrCode.model.entity.Batch;
 import com.yoga.qrCode.model.entity.Customer;
 import com.yoga.qrCode.model.entity.UserGroup;
+import com.yoga.qrCode.model.request.AuthByQrCodeRequest;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
 import com.yoga.qrCode.repository.BatchRepository;
@@ -108,6 +109,43 @@ public class UserServiceImpl implements UserService {
                     .map(p -> StringUtils.equals(p,userRequest.getPassword()))
                     .orElse(Boolean.FALSE);
             log.info("RequestId : {}, Password Validation Status..", userRequest.getRequestId(), status);
+            return status;
+        }
+        return false;
+    }
+
+    @Override
+    public Optional<String> generateToken(UserRequest userRequest) {
+        return Optional.of(agentService.getJwt(userRequest));
+    }
+
+    @Override
+    public Optional<String> generateQrCode(UserRequest userRequest) {
+        String data = String.join("-", userRequest.getCustomerId(), userRequest.getBatchId());
+        Optional<Customer> customerOp = getCustomerByUserId().apply(userRequest.getCustomerId());
+        if(customerOp.isPresent()) {
+            log.info("RequestId : {}, Customer details available.. {}", userRequest.getRequestId(), customerOp.get().toString());
+            Customer customer = customerOp.get();
+            String qrCode = agentService.getEncString(data, userRequest.getRequestId());
+            customer.setQrCode(qrCode);
+            customerRepository.save(customer);
+            log.info("RequestId : {}, QrCode updated..", userRequest.getRequestId());
+            return Optional.of(qrCode);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean validateQrCode(AuthByQrCodeRequest authByQrCodeRequest) {
+        Optional<Customer> customerOp = getCustomerByUserId().apply(authByQrCodeRequest.getCustomerId());
+        if(customerOp.isPresent()) {
+            log.info("RequestId : {}, Customer details available.. {}", authByQrCodeRequest.getRequestId(), customerOp.get().toString());
+            Customer customer = customerOp.get();
+            boolean status = Optional.ofNullable(authByQrCodeRequest.getQrCode())
+                    .filter(StringUtils :: isNotEmpty)
+                    .map(qr -> StringUtils.equals(qr,customer.getQrCode()))
+                    .orElse(Boolean.FALSE);
+            log.info("RequestId : {}, QrCode Validation Status..", authByQrCodeRequest.getRequestId(), status);
             return status;
         }
         return false;

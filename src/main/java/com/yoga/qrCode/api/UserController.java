@@ -1,9 +1,11 @@
 package com.yoga.qrCode.api;
 
+import com.yoga.qrCode.model.response.QrCodeResponse;
 import com.yoga.qrCode.model.response.Response;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
 import com.yoga.qrCode.service.UserService;
+import com.yoga.qrCode.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,18 @@ public class UserController {
                                 .orElse(Boolean.FALSE);
         log.info("RequestId : {} - User Password update process ends..",requestId);
         return new ResponseEntity<>(new Response().setStatus(status), getHttpStatusCode(status));
+    }
+
+    @PostMapping(value = "/qrCode/generate")
+    public ResponseEntity<QrCodeResponse> generateQrCode(@RequestBody UserRequest userRequest, @RequestHeader("requestId") String requestId) {
+        log.info("RequestId : {} - QR Code update process starts..",requestId);
+        userRequest.setRequestId(requestId);
+        String qrCode = Optional.ofNullable(userService.generateQrCode(userRequest))
+                        .get()
+                        .orElse(null);
+        boolean status = StringUtils.isNotEmpty(qrCode) ? Boolean.TRUE : Boolean.FALSE;
+        log.info("RequestId : {} - QR Code update process ends..",requestId);
+        return new ResponseEntity<>(CommonUtils.prepareQrCodeResponse(userRequest, qrCode, status), getHttpStatusCode(status));
     }
 
 

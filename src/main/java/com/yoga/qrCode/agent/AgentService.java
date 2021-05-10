@@ -1,11 +1,13 @@
 package com.yoga.qrCode.agent;
 
-import com.yoga.qrCode.model.response.Response;
+import com.yoga.qrCode.model.request.UserRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +22,9 @@ public class AgentService {
 
     @Value("${auth.ip}")
     private String authIp;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public String getEncString(String data, String requestId) {
       log.info("{} Getting Encrypted String..", requestId);
@@ -45,6 +50,18 @@ public class AgentService {
         return null;
     }
 
+    public String getJwt(UserRequest userRequest) {
+        log.info("{} Getting JWT for customerId : {}", userRequest.getRequestId(),userRequest.getCustomerId());
+        HttpEntity httpEntity = new HttpEntity(userRequest, loadHttpHeaders(userRequest.getRequestId()));
+        String url = authIp + "/api/v2.0/token/generate";
+        Map<String, Object> response = invokePost(url, httpEntity, userRequest.getRequestId());
+        Map<String, Object> responseStatus = (Map<String, Object>) response.get("response");
+        if(StringUtils.equals((CharSequence) responseStatus.get("status"),"200")) {
+            return (String) responseStatus.get("jwt");
+        }
+        return null;
+    }
+
     private HttpHeaders loadHttpHeaders(String requestId) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -56,5 +73,11 @@ public class AgentService {
         log.info("{} Invoking endpoint : {}", requestId, url);
         ResponseEntity<Map> responseEntity =  restTemplate.postForEntity(url, httpEntity, Map.class);
         return responseEntity.getStatusCode() == HttpStatus.OK ? responseEntity.getBody() : null;
+    }
+
+    @KafkaListener(topics = "qrTopic", groupId = "my_group")
+    public void consumeQrStatus(String msg) {
+        log.info("Message consumed {}", msg);
+        this.messagingTemplate.convertAndSend("/topic/getQrCodeStatus", msg);
     }
 }

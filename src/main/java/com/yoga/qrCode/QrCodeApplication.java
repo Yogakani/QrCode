@@ -1,5 +1,6 @@
 package com.yoga.qrCode;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,11 @@ public class QrCodeApplication {
 	@Bean
 	public RestTemplate getRestTemplate() {
 		return new RestTemplate();
+	}
+
+	@Bean
+	public ObjectMapper getMapper() {
+		return new ObjectMapper();
 	}
 
 }
