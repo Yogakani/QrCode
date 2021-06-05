@@ -6,8 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,16 +18,16 @@ public class AgentService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${auth.ip}")
+    @Value("${auth.host}")
     private String authIp;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    @Value("${auth.port}")
+    private String authPort;
 
     public String getEncString(String data, String requestId) {
       log.info("{} Getting Encrypted String..", requestId);
       HttpEntity httpEntity = new HttpEntity(data, loadHttpHeaders(requestId));
-      String url = authIp + "/api/v1.0/crypt/enrcypt";
+      String url = "http://" + authIp + ":" + authPort + "/api/v1.0/crypt/enrcypt";
       Map<String, Object> response = invokePost(url, httpEntity, requestId);
       Map<String, Object> responseStatus = (Map<String, Object>) response.get("response");
       if(StringUtils.equals((CharSequence) responseStatus.get("status"),"200")) {
@@ -41,7 +39,7 @@ public class AgentService {
     public String getDctString(String data, String requestId) {
         log.info("{} Getting Decrypted String..", requestId);
         HttpEntity httpEntity = new HttpEntity(data, loadHttpHeaders(requestId));
-        String url = authIp + "/api/v1.0/crypt/decrypt";
+        String url = "http://" + authIp + ":" + authPort  + "/api/v1.0/crypt/decrypt";
         Map<String, Object> response = invokePost(url, httpEntity, requestId);
         Map<String, Object> responseStatus = (Map<String, Object>) response.get("response");
         if(StringUtils.equals((CharSequence) responseStatus.get("status"),"200")) {
@@ -53,7 +51,7 @@ public class AgentService {
     public String getJwt(UserRequest userRequest) {
         log.info("{} Getting JWT for customerId : {}", userRequest.getRequestId(),userRequest.getCustomerId());
         HttpEntity httpEntity = new HttpEntity(userRequest, loadHttpHeaders(userRequest.getRequestId()));
-        String url = authIp + "/api/v2.0/token/generate";
+        String url = "http://" + authIp + ":" + authPort  + "/api/v2.0/token/generate";
         Map<String, Object> response = invokePost(url, httpEntity, userRequest.getRequestId());
         Map<String, Object> responseStatus = (Map<String, Object>) response.get("response");
         if(StringUtils.equals((CharSequence) responseStatus.get("status"),"200")) {
@@ -75,9 +73,4 @@ public class AgentService {
         return responseEntity.getStatusCode() == HttpStatus.OK ? responseEntity.getBody() : null;
     }
 
-    @KafkaListener(topics = "qrTopic", groupId = "my_group")
-    public void consumeQrStatus(String msg) {
-        log.info("Message consumed {}", msg);
-        this.messagingTemplate.convertAndSend("/topic/getQrCodeStatus", msg);
-    }
 }

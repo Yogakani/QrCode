@@ -7,16 +7,18 @@ import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.UserResponse;
 import lombok.experimental.UtilityClass;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @UtilityClass
 public class ModelTransformer {
 
-    public static Supplier<Customer> userToCustomerModel(UserRequest userRequest) {
+    public static Supplier<Customer> userToCustomerModel(UserRequest userRequest, Function<String, String> tempPwdFun) {
         return () -> new Customer()
                         .setUserId(userRequest.getCustomerId())
                         .setEmailId(userRequest.getEmailId())
-                        .setSetupCompleted(false);
+                        .setSetupCompleted(false)
+                        .setTempPwd(tempPwdFun.apply("6"));
     }
 
     public static Supplier<UserGroup> userGroupModel(Customer customer, Batch batch) {

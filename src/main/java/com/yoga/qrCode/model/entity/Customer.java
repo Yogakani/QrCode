@@ -29,4 +29,6 @@ public class Customer {
     private String password;
     @Column(name = "qrCode")
     private String qrCode;
+    @Column(name = "tempPwd")
+    private String tempPwd;
 }

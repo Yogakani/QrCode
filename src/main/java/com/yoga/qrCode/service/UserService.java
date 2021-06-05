@@ -15,4 +15,6 @@ public interface UserService {
     Optional<String> generateToken(UserRequest userRequest);
     Optional<String> generateQrCode(UserRequest userRequest);
     boolean validateQrCode(AuthByQrCodeRequest authByQrCodeRequest);
+    String generateTempPass(String length);
+    String getTempPassword(String userId, String requestId);
 }

@@ -2,7 +2,6 @@ package com.yoga.qrCode.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yoga.qrCode.config.KafkaProducedConfig;
 import com.yoga.qrCode.model.request.AuthByQrCodeRequest;
 import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.AuthResponse;
@@ -13,10 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -30,9 +25,6 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private KafkaTemplate<String,String> kafkaTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -78,24 +70,7 @@ public class AuthController {
                              .orElse(null);
         String msg = objectMapper.writeValueAsString(new AuthResponse().setCustomerId(authReq.getCustomerId())
                 .setBatchId(authReq.getBatchId()).setJwt(jwt).setStatus(status));
-        publishMsg(msg, KafkaProducedConfig.TOPIC_QRCODE, requestId);
         return new ResponseEntity<>(new Response().setStatus(status), getHttpStatusCode(status));
-    }
-
-    private void publishMsg(String msg, String topicName, String requestId) {
-        ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topicName, msg);
-
-        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-            @Override
-            public void onFailure(Throwable ex) {
-                log.error("{} Unable to send message {}", requestId, ex.getMessage());
-            }
-
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
-                log.info("{} Message published {} with offset {}", requestId, msg, result.getRecordMetadata().offset());
-            }
-        });
     }
 
 }

@@ -1,5 +1,6 @@
 package com.yoga.qrCode.api;
 
+import com.yoga.qrCode.agent.MailService;
 import com.yoga.qrCode.model.response.QrCodeResponse;
 import com.yoga.qrCode.model.response.Response;
 import com.yoga.qrCode.model.request.UserRequest;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import java.util.Optional;
 
 import static com.yoga.qrCode.utils.CommonUtils.getHttpStatusCode;
@@ -24,12 +26,20 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MailService mailService;
+
     @PostMapping(value = "/create")
-    public ResponseEntity<Response> createUser(@RequestBody UserRequest userRequest, @RequestHeader("requestId") String requestId) {
+    public ResponseEntity<Response> createUser(@RequestBody UserRequest userRequest, @RequestHeader("requestId") String requestId) throws MessagingException {
         log.info("RequestId : {} - Create User process starts..",requestId);
         userRequest.setRequestId(requestId);
         boolean status = userService.createNewUser(userRequest);
         log.info("RequestId : {} - Create User process ends..",requestId);
+        if(status) {
+            String tempPwd = userService.getTempPassword(userRequest.getCustomerId(), requestId);
+            String content = CommonUtils.tempPwdContent(tempPwd, userRequest.getCustomerId());
+            mailService.triggerMail(content, userRequest.getEmailId(), "Temporary Password Generated", requestId);
+        }
         return new ResponseEntity<>(new Response().setStatus(status), getHttpStatusCode(status));
     }
 

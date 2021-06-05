@@ -33,4 +33,15 @@ public class CommonUtils {
         qrCodeResponse.setStatus(status);
         return qrCodeResponse;
     }
+
+    public static String tempPwdContent(String content, String name) {
+        String header = "<p> Hi " + name + ",";
+        String body = "<br> Your Temporary Password is <b>" + content + "</b>. Please use this within 48 hrs.";
+        String footer = "<br> Regards,<br>Onboarding Team.</p>";
+        return new StringBuilder()
+                .append(header)
+                .append(body)
+                .append(footer)
+                .toString();
+    }
 }
