@@ -1,5 +1,6 @@
 package com.yoga.qrCode.service;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yoga.qrCode.agent.AgentService;
 import com.yoga.qrCode.model.entity.Batch;
 import com.yoga.qrCode.model.entity.Customer;
@@ -17,6 +18,8 @@ import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -72,16 +75,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean authenticate(UserRequest userRequest, String requestId) {
+    public Map<String, Boolean> authenticate(UserRequest userRequest, String requestId) {
+        Map<String,Boolean> res = new HashMap<>();
         Optional<Customer> customerOp = getCustomerByUserId().apply(userRequest.getCustomerId());
         if (customerOp.isPresent()) {
             log.info("RequestId : {}, Customer details available.. {}", requestId, customerOp.get().toString());
             Optional<UserGroup> userGroupOp = getUserGroupByCustomerId().apply(customerOp.get().getId());
             Optional<Batch> batchOp = batchRepository.findById(userGroupOp.get().getBatch().getId());
-            return batchOp.get().getBatchId().equals(userRequest.getBatchId()) ? Boolean.TRUE : Boolean.FALSE;
+            Boolean status =  batchOp.get().getBatchId().equals(userRequest.getBatchId()) ? Boolean.TRUE : Boolean.FALSE;
+            res.put("status", status);
+            res.put("setup", customerOp.get().isSetupCompleted());
+            return res;
         }
         log.info("RequestId : {}, Customer details not available.. {}", requestId, userRequest.getCustomerId());
-        return false;
+        res.put("status", Boolean.FALSE);
+        return res;
     }
 
     @Override

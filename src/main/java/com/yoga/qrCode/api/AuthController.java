@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static com.yoga.qrCode.utils.CommonUtils.getHttpStatusCode;
@@ -32,12 +33,13 @@ public class AuthController {
     @PostMapping(value = "/authenticate")
     public ResponseEntity<Response> authenticateUser(@RequestBody UserRequest userRequest, @RequestHeader("requestId") String requestId) {
         log.info("{} Authenticating user : {}", requestId, userRequest.getCustomerId());
-        boolean status = Optional.ofNullable(userRequest)
+        Map<String, Boolean> res = Optional.ofNullable(userRequest)
                 .filter(req -> StringUtils.isNotEmpty(req.getCustomerId())  && StringUtils.isNotEmpty(req.getBatchId()))
                 .map(req -> userService.authenticate(req, requestId))
-                .orElse(Boolean.FALSE);
+                .orElse(null);
+        Boolean status = res.get("status") != null ? res.get("status") : Boolean.FALSE;
         log.info("{} Authenticating user status is : {}", requestId, status);
-        return new ResponseEntity<>(new Response().setStatus(status), getHttpStatusCode(status));
+        return new ResponseEntity<>(CommonUtils.prepareUserCheckResponse(res), getHttpStatusCode(status));
     }
 
     @PostMapping(value = "/authByPassword")

@@ -4,8 +4,11 @@ import com.yoga.qrCode.model.request.UserRequest;
 import com.yoga.qrCode.model.response.AuthResponse;
 import com.yoga.qrCode.model.response.QrCodeResponse;
 import com.yoga.qrCode.model.response.Response;
+import com.yoga.qrCode.model.response.UserCheckResponse;
 import lombok.experimental.UtilityClass;
 import org.springframework.http.HttpStatus;
+
+import java.util.Map;
 
 @UtilityClass
 public class CommonUtils {
@@ -43,5 +46,16 @@ public class CommonUtils {
                 .append(body)
                 .append(footer)
                 .toString();
+    }
+
+    public static UserCheckResponse prepareUserCheckResponse(Map<String,Boolean> res) {
+        if (res != null) {
+            return (UserCheckResponse) new UserCheckResponse()
+                    .setSetup(res.get("setup"))
+                    .setStatus(res.get("status"));
+        } else {
+            return (UserCheckResponse) new UserCheckResponse()
+                    .setStatus(Boolean.FALSE);
+        }
     }
 }
